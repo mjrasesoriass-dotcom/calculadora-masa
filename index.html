@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Calculadora de Calorías</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      padding: 24px 16px 60px;
+    }
+    .wrap { max-width: 520px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 24px; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: #e8f5ee; color: #0f6e56;
+      border: 1px solid #9fe1cb; border-radius: 20px;
+      padding: 5px 14px; margin-bottom: 12px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+    .header p { font-size: 14px; color: #555; line-height: 1.55; }
+
+    .card {
+      background: #fff; border: 1px solid #e0ddd5;
+      border-radius: 16px; padding: 20px; margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #999; margin-bottom: 16px;
+    }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field label { display: block; font-size: 13px; color: #555; font-weight: 500; margin-bottom: 6px; }
+    .field input {
+      width: 100%; height: 46px; padding: 0 14px;
+      font-size: 18px; font-weight: 600;
+      background: #f8f7f4; border: 1px solid #ddd;
+      border-radius: 10px; color: #111; outline: none;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input:focus { border-color: #1D9E75; background: #fff; }
+    input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .act-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .act-btn {
+      padding: 13px 10px; border: 1.5px solid #e0ddd5;
+      border-radius: 12px; background: #f8f7f4; color: #555;
+      font-size: 13px; cursor: pointer; text-align: center;
+      line-height: 1.3; -webkit-tap-highlight-color: transparent;
+    }
+    .act-btn.on { border-color: #1D9E75; background: #e8f5ee; color: #0f6e56; }
+    .act-label { font-size: 13px; font-weight: 700; display: block; }
+    .act-sub { font-size: 11px; opacity: 0.75; display: block; margin-top: 2px; }
+
+    .error {
+      font-size: 14px; color: #a32d2d;
+      padding: 12px 14px; background: #fcebeb;
+      border-radius: 10px; border: 1px solid #f7c1c1;
+      margin-bottom: 14px;
+    }
+
+    .btn-calc {
+      display: block; width: 100%; height: 52px;
+      background: #111; color: #fff; border: none;
+      border-radius: 14px; font-size: 16px; font-weight: 700;
+      cursor: pointer; margin-bottom: 14px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-calc:active { opacity: 0.8; }
+
+    .res-top { text-align: center; padding-bottom: 18px; border-bottom: 1px solid #ece9e0; margin-bottom: 18px; }
+    .res-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: #999; font-weight: 700; margin-bottom: 8px; }
+    .res-num { font-size: 54px; font-weight: 800; color: #111; line-height: 1; letter-spacing: -2px; }
+    .res-unit { font-size: 18px; font-weight: 500; color: #999; }
+    .res-sub { font-size: 13px; color: #888; margin-top: 8px; }
+
+    .macros { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+    .macro {
+      text-align: center; background: #f8f7f4;
+      border-radius: 12px; padding: 14px 6px;
+      border: 1px solid #ece9e0;
+    }
+    .macro .ml { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #999; font-weight: 700; margin-bottom: 4px; }
+    .macro .mv { font-size: 24px; font-weight: 800; line-height: 1; }
+    .macro .mg { font-size: 11px; color: #999; margin-top: 3px; }
+    .macro.p .mv { color: #185FA5; }
+    .macro.c .mv { color: #854F0B; }
+    .macro.g .mv { color: #3B6D11; }
+
+    .tips-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 12px; border-top: 1px solid #ece9e0; padding-top: 16px; }
+    .tip { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 14px; color: #444; line-height: 1.5; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; margin-top: 5px; flex-shrink: 0; }
+
+    .cta-word { font-size: 22px; font-weight: 800; color: #0f6e56; letter-spacing: 0.05em; display: block; margin: 10px 0; text-align: center; }
+    .cta-text { font-size: 15px; color: #444; line-height: 1.55; text-align: center; margin-bottom: 6px; }
+    .cta-small { font-size: 12px; color: #aaa; display: block; text-align: center; margin-top: 8px; }
+
+    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: #bbb; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="badge">Calculadora personalizada</div>
+    <h1>&#191;Cu&#225;ntas calor&#237;as necesitas para ganar masa?</h1>
+    <p>Dise&#241;ada para hombres delgados que no consiguen subir de peso. Rellena tus datos y descubre tu n&#250;mero exacto.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tus datos</div>
+    <div class="grid2">
+      <div class="field">
+        <label>Edad (a&#241;os)</label>
+        <input id="f-age" type="number" inputmode="numeric" placeholder="25">
+      </div>
+      <div class="field">
+        <label>Peso actual (kg)</label>
+        <input id="f-weight" type="number" inputmode="numeric" placeholder="65">
+      </div>
+      <div class="field">
+        <label>Altura (cm)</label>
+        <input id="f-height" type="number" inputmode="numeric" placeholder="175">
+      </div>
+      <div class="field">
+        <label>Peso objetivo (kg)</label>
+        <input id="f-target" type="number" inputmode="numeric" placeholder="75">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Nivel de actividad</div>
+    <div class="act-grid">
+      <div id="a0" class="act-btn" onclick="setAct(0)">
+        <span class="act-label">Sedentario</span>
+        <span class="act-sub">Sin ejercicio</span>
+      </div>
+      <div id="a1" class="act-btn" onclick="setAct(1)">
+        <span class="act-label">Ligero</span>
+        <span class="act-sub">1&#8211;2 d&#237;as/sem.</span>
+      </div>
+      <div id="a2" class="act-btn on" onclick="setAct(2)">
+        <span class="act-label">Moderado</span>
+        <span class="act-sub">3&#8211;4 d&#237;as/sem.</span>
+      </div>
+      <div id="a3" class="act-btn" onclick="setAct(3)">
+        <span class="act-label">Intenso</span>
+        <span class="act-sub">5&#8211;6 d&#237;as/sem.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="err" class="error" style="display:none;"></div>
+
+  <button class="btn-calc" onclick="calcular()">Calcular mis calor&#237;as</button>
+
+  <div class="card" id="res-card" style="display:none;">
+    <div class="res-top">
+      <div class="res-label">Calor&#237;as diarias para ganar masa</div>
+      <div>
+        <span class="res-num" id="r-total">0</span>
+        <span class="res-unit">kcal</span>
+      </div>
+      <div class="res-sub">Super&#225;vit de <strong>350</strong> kcal sobre tu mantenimiento</div>
+    </div>
+    <div class="macros">
+      <div class="macro p">
+        <div class="ml">Prote&#237;na</div>
+        <div class="mv" id="r-prot">0</div>
+        <div class="mg">g/d&#237;a</div>
+      </div>
+      <div class="macro c">
+        <div class="ml">Carbos</div>
+        <div class="mv" id="r-carb">0</div>
+        <div class="mg">g/d&#237;a</div>
+      </div>
+      <div class="macro g">
+        <div class="ml">Grasas</div>
+        <div class="mv" id="r-fat">0</div>
+        <div class="mg">g/d&#237;a</div>
+      </div>
+    </div>
+    <div class="tips-title">Claves para tu caso</div>
+    <div class="tip"><div class="dot"></div><span id="r-t1"></span></div>
+    <div class="tip"><div class="dot"></div><span id="r-t2"></span></div>
+    <div class="tip"><div class="dot"></div><span id="r-t3"></span></div>
+  </div>
+
+  <div class="card" id="cta-card" style="display:none;">
+    <p class="cta-text">&#191;Quieres aplicar esto a tu caso con un plan <strong>completamente personalizado</strong>?</p>
+    <span class="cta-word">Resp&#243;ndeme PLAN</span>
+    <p class="cta-text">por mensaje directo y te cuento c&#243;mo funciona mi asesor&#237;a 1 a 1.</p>
+    <span class="cta-small">Plazas limitadas &#183; Solo para hombres que van en serio</span>
+  </div>
+
+  <div class="footer">F&#243;rmula Mifflin&#8211;St Jeor &#183; Calculadora personalizada</div>
+</div>
+
+<script>
+var actVals = [1.2, 1.375, 1.55, 1.725];
+var actSel = 2;
+
+function setAct(n) {
+  actSel = n;
+  for (var i = 0; i < 4; i++) {
+    document.getElementById('a' + i).className = (i === n) ? 'act-btn on' : 'act-btn';
+  }
+}
+
+function calcular() {
+  var errEl = document.getElementById('err');
+  errEl.style.display = 'none';
+
+  var age    = parseInt(document.getElementById('f-age').value,    10);
+  var weight = parseInt(document.getElementById('f-weight').value, 10);
+  var height = parseInt(document.getElementById('f-height').value, 10);
+  var target = parseInt(document.getElementById('f-target').value, 10);
+
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    document.getElementById('res-card').style.display = 'none';
+    document.getElementById('cta-card').style.display = 'none';
+  }
+
+  if (isNaN(age) || isNaN(weight) || isNaN(height) || isNaN(target)) {
+    showErr('Por favor rellena todos los campos antes de calcular.');
+    return;
+  }
+  if (age < 16 || age > 65) {
+    showErr('Introduce una edad v\u00e1lida entre 16 y 65 a\u00f1os.');
+    return;
+  }
+  if (weight < 40 || weight > 150) {
+    showErr('Introduce un peso v\u00e1lido entre 40 y 150 kg.');
+    return;
+  }
+  if (height < 140 || height > 220) {
+    showErr('Introduce una altura v\u00e1lida entre 140 y 220 cm.');
+    return;
+  }
+  if (target <= weight) {
+    showErr('El peso objetivo debe ser mayor que tu peso actual.');
+    return;
+  }
+
+  var bmr     = Math.round(10 * weight + 6.25 * height - 5 * age + 5);
+  var tdee    = Math.round(bmr * actVals[actSel]);
+  var surplus = 350;
+  var total   = tdee + surplus;
+  var prot    = Math.round(weight * 2.2);
+  var fat     = Math.round(weight * 1.0);
+  var carb    = Math.max(0, Math.round((total - prot * 4 - fat * 9) / 4));
+  var kgGain  = Math.round((target - weight) * 10) / 10;
+  var weeks   = Math.round(kgGain / 0.25);
+
+  document.getElementById('r-total').textContent = total;
+  document.getElementById('r-prot').textContent  = prot;
+  document.getElementById('r-carb').textContent  = carb;
+  document.getElementById('r-fat').textContent   = fat;
+  document.getElementById('r-t1').textContent    = 'Necesitas ganar ' + kgGain + ' kg. Con este sup\u00e9ravit lo puedes lograr en unas ' + weeks + ' semanas sin acumular grasa de m\u00e1s.';
+  document.getElementById('r-t2').textContent    = 'Con ' + prot + 'g de prote\u00edna al d\u00eda te aseguras de que cada calor\u00eda extra se convierta en m\u00fasculo.';
+  document.getElementById('r-t3').textContent    = 'Si llevas tiempo sin subir, probablemente est\u00e9s comiendo menos de lo que crees. Este n\u00famero es tu punto de partida real.';
+
+  document.getElementById('res-card').style.display = 'block';
+  document.getElementById('cta-card').style.display = 'block';
+  document.getElementById('res-card').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
